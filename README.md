@@ -163,27 +163,6 @@ Pass `--input` to plot a separate experiment CSV, such as the 64-byte sensitivit
 .\.venv\Scripts\python.exe -m src.plot_results --input results\sensitivity_64b_alpha35\experiment_results.csv --output-directory results\sensitivity_64b_alpha35\figures
 ```
 
-### Build the report draft
-
-```powershell
-.\.venv\Scripts\python.exe -m src.build_report
-```
-
-This creates `report.pdf` from the experiment CSVs and plots. It includes the
-team roster, methodology, results, sensitivity analysis, and limitations; review
-it with the mentor and update any approved model changes before submission.
-
-### Create a draft submission archive
-
-```powershell
-.\.venv\Scripts\python.exe -m src.package_submission
-```
-
-This creates `Madhuri_241CS236.zip` one folder above the project directory. The
-archive contains the project folder, `report.pdf`, and `readme.txt`; `.venv`,
-Git metadata, and Python caches are excluded. It remains a draft until the
-mentor approves the running code and the report.
-
 ### Current baseline finding
 
 With the documented 32-byte payload and exponent 3.25, the highest tested
@@ -200,14 +179,3 @@ upload interval. The higher-overhead sensitivity case (64-byte payload,
 exponent 3.5, 100 vehicles) reached 9.21% at 50 ms and likewise did not reach
 the threshold. These are findings for this specified scenario and simplified
 channel model, not proof that saturation cannot occur in a deployed system.
-
-1. **Done:** build and validate the SUMO mobility scenario.
-2. **Done:** implement and test the specified link budget, Shannon capacity,
-   upload frequencies, collision/PDR model, and saturation analysis.
-3. **Done:** produce all four required baseline plots (utilisation, PDR,
-   residual bandwidth, per-vehicle TX rate) and a higher-overhead 64-byte /
-   alpha-3.5 sensitivity run with matching figures; discuss how the simplifying
-   channel assumptions affect the measurements.
-4. **Done:** upload source code to GitHub, share with team.
-5. Prepare the final report, obtain mentor-approved run, and submit the
-   `Madhuri_241CS236.zip` archive with the approved PDF and `readme.txt`.
