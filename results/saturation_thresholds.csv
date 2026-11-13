@@ -1,0 +1,4 @@
+upload_interval_ms,saturation_threshold_vehicle_count,status
+50,,not reached up to 100 vehicles
+100,,not reached up to 100 vehicles
+500,,not reached up to 100 vehicles

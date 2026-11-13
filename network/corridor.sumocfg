@@ -1,0 +1,11 @@
+<configuration>
+    <input>
+        <net-file value="corridor.net.xml"/>
+        <route-files value="..\routes.rou.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+        <end value="120"/>
+        <step-length value="0.05"/>
+    </time>
+</configuration>

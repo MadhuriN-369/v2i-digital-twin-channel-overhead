@@ -1,0 +1,15 @@
+<routes>
+    <vType id="car" vClass="passenger" accel="2.6"
+           decel="4.5" length="5" maxSpeed="20"/>
+    <route id="r0" edges="road0"/>
+    <vehicle id="demo0" type="car" route="r0" depart="0"
+             departLane="0" departPos="100" departSpeed="5"/>
+    <vehicle id="demo1" type="car" route="r0" depart="0"
+             departLane="1" departPos="250" departSpeed="5"/>
+    <vehicle id="demo2" type="car" route="r0" depart="0"
+             departLane="0" departPos="400" departSpeed="5"/>
+    <vehicle id="demo3" type="car" route="r0" depart="0"
+             departLane="1" departPos="550" departSpeed="5"/>
+    <vehicle id="demo4" type="car" route="r0" depart="0"
+             departLane="0" departPos="700" departSpeed="5"/>
+</routes>
