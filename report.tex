@@ -98,9 +98,9 @@ per-vehicle transmission rate---across vehicle densities from 5 to 100 on a
 saturation threshold at which digital-twin telemetry alone consumes more than
 60\% of the available V2I uplink capacity.  Our findings show that for small
 telemetry payloads (32--64 bytes), the channel remains well below saturation
-even at 100 vehicles; approximately 650--2{,}800 vehicles would be required to
-reach the 60\% threshold depending on the payload size and propagation
-conditions.
+the channel reaches 43\% utilisation at 100 vehicles with 50\,ms updates.
+The 60\% saturation threshold is crossed at approximately 115--139 vehicles
+depending on the payload size and propagation conditions.
 
 % ══════════════════════════════════════════════════════════════════════════
 \section{Introduction}
@@ -218,14 +218,26 @@ $\mathrm{NF} = 9$\,dB.
 
 \subsubsection{Shannon Capacity and Packet Airtime}
 
-The theoretical link capacity and ideal packet serialisation time are:
-\begin{align}
-    C &= B \cdot \log_2\!\left(1 + 10^{\mathrm{SNR}_{\text{dB}}/10}\right)
-       \quad\text{[bits/s]} \label{eq:shannon} \\[4pt]
-    t_{\text{air}} &= \frac{L \times 8}{C} \quad\text{[seconds]}
+The theoretical link capacity is:
+\begin{equation}
+    C = B \cdot \log_2\!\left(1 + 10^{\mathrm{SNR}_{\text{dB}}/10}\right)
+       \quad\text{[bits/s]} \label{eq:shannon}
+\end{equation}
+
+Each transmitted frame incurs 802.11p PHY/MAC overhead in addition to the
+payload serialisation time.  The total per-packet airtime is:
+\begin{equation}
+    t_{\text{air}} = \frac{(L + H_{\text{MAC}}) \times 8}{C} + t_{\text{overhead}}
+       \quad\text{[seconds]}
        \label{eq:airtime}
-\end{align}
-where $L$ is the telemetry payload in bytes (32 or 64).
+\end{equation}
+where $L$ is the telemetry payload (32 or 64 bytes), $H_{\text{MAC}} = 28$\,bytes
+is the 802.11p MAC header, and $t_{\text{overhead}} = 196$\,$\mu$s accounts for
+the preamble (40\,$\mu$s), DIFS (58\,$\mu$s), and average backoff (98\,$\mu$s).
+
+This realistic frame overhead increases per-packet airtime by approximately
+$21\times$ compared to payload-only serialisation, bringing the model
+significantly closer to real 802.11p behaviour.
 
 \subsection{Channel Model Parameters}
 
@@ -247,6 +259,11 @@ where $L$ is the telemetry payload in bytes (32 or 64).
     Reference path loss           & 47.87 & dB \\
     Path-loss exponent ($\alpha$) & 3.0--3.5 & --- \\
     Telemetry payload ($L$)       & 32--64   & bytes \\
+    MAC header ($H_{\text{MAC}}$)   & 28       & bytes \\
+    802.11p preamble               & 40       & $\mu$s \\
+    DIFS                           & 58       & $\mu$s \\
+    Average backoff                & 98       & $\mu$s \\
+    Total frame overhead ($t_{\text{overhead}}$) & 196 & $\mu$s \\
     Upload intervals              & 50, 100, 500 & ms \\
     \bottomrule
 \end{tabular}
@@ -402,11 +419,11 @@ assigned 3.0--3.5 range).
     \toprule
     \textbf{Vehicles} & \textbf{50\,ms} & \textbf{100\,ms} & \textbf{500\,ms} \\
     \midrule
-    5   & 0.10\%  & 0.05\%  & 0.01\% \\
-    10  & 0.21\%  & 0.10\%  & 0.02\% \\
-    20  & 0.43\%  & 0.22\%  & 0.04\% \\
-    50  & 1.08\%  & 0.54\%  & 0.11\% \\
-    100 & 2.15\%  & 1.07\%  & 0.21\% \\
+    5   & 2.15\%  & 1.07\%  & 0.21\% \\
+    10  & 4.31\%  & 2.16\%  & 0.43\% \\
+    20  & 8.65\%  & 4.33\%  & 0.87\% \\
+    50  & 21.63\% & 10.82\% & 2.16\% \\
+    100 & 43.22\% & 21.61\% & 4.32\% \\
     \bottomrule
 \end{tabular}
 \end{table}
@@ -415,8 +432,8 @@ assigned 3.0--3.5 range).
     \centering
     \includegraphics[width=0.85\textwidth]{results/figures/utilisation_vs_density.png}
     \caption{Channel utilisation versus vehicle density (baseline).  The 60\%
-    saturation threshold (red dashed line) is far above all tested scenarios.
-    The bottom panel provides a zoomed view of the actual data range.}
+    saturation threshold (red dashed line) is approached but not crossed.
+    At 100 vehicles / 50\,ms, utilisation reaches 43.2\%.}
     \label{fig:util_baseline}
 \end{figure}
 
@@ -430,11 +447,11 @@ assigned 3.0--3.5 range).
     \toprule
     \textbf{Vehicles} & \textbf{50\,ms} & \textbf{100\,ms} & \textbf{500\,ms} \\
     \midrule
-    5   & 100.00\% & 100.00\% & 100.00\% \\
-    10  & 100.00\% & 96.16\%  & 100.00\% \\
-    20  & 99.27\%  & 99.46\%  & 100.00\% \\
-    50  & 97.42\%  & 99.43\%  & 99.44\%  \\
-    100 & 96.09\%  & 97.96\%  & 99.74\%  \\
+    5   & 100.00\% & 98.48\%  & 99.60\%  \\
+    10  & 84.00\%  & 92.00\%  & 96.00\%  \\
+    20  & 82.99\%  & 98.00\%  & 100.00\% \\
+    50  & 66.96\%  & 81.01\%  & 95.20\%  \\
+    100 & 42.24\%  & 63.64\%  & 91.06\%  \\
     \bottomrule
 \end{tabular}
 \end{table}
@@ -454,7 +471,7 @@ assigned 3.0--3.5 range).
     \centering
     \includegraphics[width=0.85\textwidth]{results/figures/residual_bandwidth_vs_density.png}
     \caption{Residual bandwidth available for task offloading (baseline).
-    Even at 100 vehicles with 50\,ms updates, 9.79\,MHz of the 10\,MHz
+    At 100 vehicles with 50\,ms updates, only 5.68\,MHz of the 10\,MHz
     channel remains available.}
     \label{fig:residual_baseline}
 \end{figure}
@@ -485,14 +502,14 @@ loss, thereby increasing both airtime per packet and collision probability.
     \toprule
     \textbf{Vehicles} & \textbf{Interval} & \textbf{Utilisation} & \textbf{PDR} & \textbf{Residual BW} \\
     \midrule
-    5   & 50\,ms  & 0.41\% & 100.00\% & 9.96\,MHz \\
-    10  & 50\,ms  & 0.89\% & 98.10\%  & 9.91\,MHz \\
-    20  & 50\,ms  & 1.87\% & 95.37\%  & 9.81\,MHz \\
-    50  & 50\,ms  & 4.70\% & 90.96\%  & 9.53\,MHz \\
-    100 & 50\,ms  & 9.21\% & 82.76\%  & 9.08\,MHz \\
+    5   & 50\,ms  & 2.56\%  & 100.00\% & 9.74\,MHz \\
+    10  & 50\,ms  & 5.20\%  & 83.44\%  & 9.48\,MHz \\
+    20  & 50\,ms  & 10.54\% & 79.51\%  & 8.95\,MHz \\
+    50  & 50\,ms  & 26.36\% & 61.05\%  & 7.36\,MHz \\
+    100 & 50\,ms  & 52.44\% & 34.99\%  & 4.76\,MHz \\
     \midrule
-    100 & 100\,ms & 4.61\% & 91.99\%  & 9.54\,MHz \\
-    100 & 500\,ms & 0.92\% & 98.40\%  & 9.91\,MHz \\
+    100 & 100\,ms & 26.22\% & 57.20\%  & 7.38\,MHz \\
+    100 & 500\,ms & 5.24\%  & 89.35\%  & 9.48\,MHz \\
     \bottomrule
 \end{tabular}
 \end{table}
@@ -509,8 +526,8 @@ loss, thereby increasing both airtime per packet and collision probability.
         \caption{PDR}
     \end{subfigure}
     \caption{Sensitivity analysis: utilisation and PDR for 64\,B, $\alpha = 3.5$.
-    The utilisation increases approximately $4.3\times$ compared to the
-    baseline, and PDR drops to 82.8\% at 100 vehicles / 50\,ms.}
+    Utilisation reaches 52.4\% at 100 vehicles / 50\,ms, with PDR
+    dropping to 35.0\% due to heavy collision rates on the shared channel.}
     \label{fig:sensitivity}
 \end{figure}
 
@@ -534,18 +551,18 @@ tested densities:
     \toprule
     \textbf{Vehicles} & \textbf{Utilisation (\%)} & \textbf{Per-vehicle (\%)} \\
     \midrule
-    5   & 0.4141 & 0.0828 \\
-    10  & 0.8919 & 0.0892 \\
-    20  & 1.8748 & 0.0937 \\
-    50  & 4.7007 & 0.0940 \\
-    100 & 9.2075 & 0.0921 \\
+    5   & 2.5553  & 0.5111 \\
+    10  & 5.2021  & 0.5202 \\
+    20  & 10.5351 & 0.5268 \\
+    50  & 26.3573 & 0.5271 \\
+    100 & 52.4358 & 0.5244 \\
     \bottomrule
 \end{tabular}
 \end{table}
 
 A linear fit through the origin yields:
 \begin{equation}
-    U(\%) = 0.0925 \times N_{\text{vehicles}} \qquad (R^2 = 0.9998)
+    U(\%) = 0.5249 \times N_{\text{vehicles}} \qquad (R^2 = 0.9999)
     \label{eq:linear_fit}
 \end{equation}
 
@@ -556,7 +573,7 @@ The $R^2 > 0.999$ confirms excellent linearity, validating the extrapolation.
 Setting $U = 60\%$ and solving for $N$:
 
 \begin{equation}
-    N_{60\%} = \frac{60}{0.0925} \approx 649~\text{vehicles}
+    N_{60\%} = \frac{60}{0.5249} \approx 115~\text{vehicles}
     \quad\text{(worst case: 64\,B, } \alpha = 3.5\text{, 50\,ms)}
 \end{equation}
 
@@ -568,15 +585,16 @@ Setting $U = 60\%$ and solving for $N$:
     \toprule
     \textbf{Payload} & $\boldsymbol{\alpha}$ & \textbf{50\,ms} & \textbf{100\,ms} & \textbf{500\,ms} \\
     \midrule
-    32\,B & 3.25 & $\sim$2{,}792 & $\sim$5{,}582 & $\sim$27{,}929 \\
-    64\,B & 3.50 & $\sim$649     & $\sim$1{,}298 & $\sim$6{,}494  \\
+    32\,B & 3.25 & $\sim$139 & $\sim$278 & $\sim$1{,}388 \\
+    64\,B & 3.50 & $\sim$115 & $\sim$229 & $\sim$1{,}144 \\
     \bottomrule
 \end{tabular}
 \end{table}
 
 Even in the absolute worst case (64\,B, $\alpha = 3.5$, 50\,ms interval),
-approximately \textbf{649 vehicles on a 1\,km corridor} would be required
-to saturate 60\% of the channel.
+approximately \textbf{115 vehicles on a 1\,km corridor} would be required
+to saturate 60\% of the channel.  This is a realistic urban vehicle density,
+demonstrating that 802.11p frame overhead makes saturation a genuine concern.
 
 % ══════════════════════════════════════════════════════════════════════════
 \section{Discussion}
@@ -585,26 +603,27 @@ to saturate 60\% of the channel.
 \subsection{Key Findings}
 
 \begin{enumerate}
-    \item \textbf{Channel is massively underutilised:} At realistic densities
-    (up to 100 vehicles/km), digital-twin state synchronisation with 32-byte
-    payloads consumes at most 2.15\% of the 10\,MHz channel.  The 60\%
-    saturation threshold requires vehicle densities that are physically
-    unrealistic for a single road corridor.
+    \item \textbf{Channel approaches saturation at realistic densities:}
+    With 802.11p frame overhead included, 100 vehicles at 50\,ms intervals
+    consume 43.2\% (baseline) to 52.4\% (worst case) of the channel.  The
+    60\% saturation threshold is crossed at only \textasciitilde115--139
+    vehicles, well within realistic urban densities.
 
-    \item \textbf{Collisions cause more loss than capacity exhaustion:}
-    PDR drops from 100\% to 82.8\% at 100 vehicles (64\,B, $\alpha = 3.5$,
-    50\,ms), yet utilisation is only 9.2\%.  The losses stem from uncoordinated
-    transmission overlaps (MAC-layer contention), not from insufficient
-    bandwidth.
+    \item \textbf{Collisions cause severe packet loss:} PDR drops to 42.2\%
+    (baseline) and 35.0\% (worst case) at 100 vehicles / 50\,ms, meaning more
+    than half of all digital-twin updates are lost to collisions on the shared
+    uncoordinated channel.
 
     \item \textbf{Upload frequency dominates overhead:} Reducing the update
-    rate from 50\,ms to 500\,ms cuts utilisation by $10\times$ and nearly
-    eliminates collisions, at the cost of less frequent twin updates.
+    rate from 50\,ms to 500\,ms cuts utilisation by $10\times$ and
+    significantly reduces collisions (PDR recovers to 89--91\%), at the cost
+    of less frequent twin updates.
 
-    \item \textbf{Payload size has a super-linear effect:} Doubling the payload
-    from 32\,B to 64\,B combined with higher path loss ($\alpha = 3.5$)
-    increases utilisation by $4.3\times$, not $2\times$, because the lower SNR
-    at $\alpha = 3.5$ reduces Shannon capacity, extending each packet's airtime.
+    \item \textbf{802.11p overhead is the dominant factor:} The preamble,
+    DIFS, backoff, and MAC header add 196\,$\mu$s + 28 bytes per frame,
+    increasing per-packet airtime by approximately $21\times$ compared to
+    payload-only Shannon serialisation.  This makes the saturation threshold
+    realistic rather than theoretical.
 \end{enumerate}
 
 \subsection{Model Limitations}
@@ -613,9 +632,10 @@ This study uses a first-order analytical model.  The following factors are
 not modelled and would affect real-world performance:
 
 \begin{itemize}
-    \item \textbf{No MAC protocol:} The collision model assumes purely
-    uncoordinated access without CSMA/CA backoff, RTS/CTS, or scheduling.
-    A real 802.11p MAC would reduce collision rates but add protocol overhead.
+    \item \textbf{Simplified MAC model:} While 802.11p frame overhead
+    (preamble, DIFS, average backoff) is included in the airtime calculation,
+    the actual CSMA/CA carrier sensing and exponential backoff mechanisms
+    are not simulated.  A full MAC model would reduce collision rates.
 
     \item \textbf{Shannon upper bound:} Packet airtime uses the theoretical
     Shannon capacity, which is the minimum possible airtime.  Real modulation
@@ -625,9 +645,9 @@ not modelled and would affect real-world performance:
     average path loss but not multipath fading, shadowing from buildings, or
     interference from adjacent roads.
 
-    \item \textbf{No protocol headers:} Only the telemetry payload is counted;
-    IP, UDP, and application-layer headers would increase actual packet sizes
-    by 40--60 bytes.
+    \item \textbf{Partial protocol headers:} The 28-byte 802.11p MAC header
+    is included, but IP/UDP headers (40+ bytes) are not, so actual overhead
+    would be somewhat higher.
 
     \item \textbf{Single road segment:} The 1\,km corridor with 3 RSUs is a
     simplified topology.  Urban environments with intersections, multi-lane
@@ -655,28 +675,29 @@ state synchronisation using SUMO-generated mobility traces and a
 log-distance Shannon-capacity channel model.  Our key conclusions are:
 
 \begin{enumerate}
-    \item For 32-byte state updates (position, speed, heading, acceleration,
-    timestamp) at 50\,ms intervals, the channel overhead is \textbf{only
-    2.15\%} at 100 vehicles/km---well below the 60\% saturation threshold.
+    \item With 802.11p frame overhead, 32-byte state updates at 50\,ms
+    intervals consume \textbf{43.2\%} of the channel at 100 vehicles/km,
+    approaching the 60\% saturation threshold.
 
     \item The 60\% saturation threshold is reached at approximately
-    \textbf{649 vehicles} in the worst case (64\,B, $\alpha = 3.5$, 50\,ms
-    interval) and \textbf{2{,}792 vehicles} in the baseline case (32\,B,
-    $\alpha = 3.25$).
+    \textbf{115 vehicles} in the worst case (64\,B, $\alpha = 3.5$, 50\,ms
+    interval) and \textbf{139 vehicles} in the baseline case (32\,B,
+    $\alpha = 3.25$)---both realistic urban densities.
 
-    \item \textbf{MAC-layer collisions, not capacity exhaustion}, are the
-    primary source of packet loss.  At 100 vehicles with 64-byte payloads,
-    PDR drops to 82.8\% even though only 9.2\% of the channel is used.
+    \item \textbf{MAC-layer collisions cause severe packet loss:} At 100
+    vehicles with 50\,ms updates, PDR drops to 42.2\% (baseline) and 35.0\%
+    (worst case), meaning more than half of all twin updates are lost.
 
-    \item Reducing the upload frequency from 50\,ms to 500\,ms effectively
-    eliminates both utilisation concerns and collisions, suggesting that
-    \textbf{adaptive update rates} could maintain twin fidelity while
-    preserving channel capacity for task offloading.
+    \item Reducing the upload frequency from 50\,ms to 500\,ms reduces
+    utilisation to 4--5\% and recovers PDR to 89--91\%, suggesting that
+    \textbf{adaptive update rates} are essential for maintaining both twin
+    fidelity and channel capacity.
 \end{enumerate}
 
-These findings are specific to the simplified channel model described in this
-report.  A production system would need to account for MAC protocol overhead,
-real modulation schemes, fading, and multi-cell interference.
+These findings demonstrate that 802.11p frame overhead makes V2I channel
+saturation a realistic concern at urban vehicle densities.  A production system
+would additionally need to account for real modulation schemes, fading, and
+multi-cell interference.
 
 % ══════════════════════════════════════════════════════════════════════════
 \section{Reproducibility}

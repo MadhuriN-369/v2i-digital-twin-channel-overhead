@@ -94,10 +94,17 @@ def link_budget(
     return rsu_x, snr_db, capacity_bps
 
 
+MAC_HEADER_BYTES = 28          # 802.11p MAC header
+PREAMBLE_US = 40               # 802.11p preamble
+DIFS_US = 58                   # DCF inter-frame space
+AVG_BACKOFF_US = 98            # Average contention backoff
+FRAME_OVERHEAD_S = (PREAMBLE_US + DIFS_US + AVG_BACKOFF_US) * 1e-6  # 196 us
+
+
 def packet_airtime_s(payload_bytes: int, link_capacity_bps: float) -> float:
-    """Return ideal Shannon-limit airtime for one payload, excluding headers."""
+    """Return 802.11p frame airtime including MAC header and PHY overhead."""
     if payload_bytes <= 0:
         raise ValueError("Payload size must be positive.")
     if link_capacity_bps <= 0:
         raise ValueError("Link capacity must be positive.")
-    return payload_bytes * 8.0 / link_capacity_bps
+    return (payload_bytes + MAC_HEADER_BYTES) * 8.0 / link_capacity_bps + FRAME_OVERHEAD_S

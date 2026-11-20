@@ -46,7 +46,7 @@ For distance `d >= 1 m`, the model uses
 `PL(d) = PL(1 m) + 10 * 3.25 * log10(d / 1 m)`. Receiver noise is
 `-174 + 10 * log10(10 MHz) + 9` dBm. SNR is received power minus this noise
 power, and the ideal link rate is `10 MHz * log2(1 + SNR_linear)`.
-Packet airtime is payload bits divided by this Shannon rate. The reported
+Packet airtime is (payload + 28-byte MAC header) bits divided by this Shannon rate, plus 196 us of 802.11p overhead (40 us preamble, 58 us DIFS, ~98 us average backoff). The reported
 effective channel capacity is total generated payload bits divided by total
 Shannon airtime (the packet-weighted harmonic mean of link rates).
 
@@ -64,8 +64,7 @@ are linearly interpolated; upload times before the first sample use the first
 sample position. PDR counts non-collided packets.
 
 This is a first-order analytical baseline, not a detailed 802.11p/DSRC PHY/MAC
-simulation: payload airtime uses the Shannon limit, and packet headers,
-contention/backoff, fading, shadowing, receiver sensitivity, interference
+simulation: airtime uses the Shannon limit plus fixed 802.11p frame overhead; IP/UDP headers, CSMA/CA backoff simulation, fading, shadowing, receiver sensitivity, interference
 between RSUs, and retransmissions are not included. Document these limitations
 when interpreting the results. Because the brief does not specify a receiver
 sensitivity or outage threshold, the model has no separate PHY-drop test;
@@ -191,15 +190,14 @@ density (100 vehicles) produced:
 
 | Update interval | Offered utilisation | PDR | Residual bandwidth |
 |---|---:|---:|---:|
-| 50 ms | 2.15% | 96.09% | 9.79 MHz |
-| 100 ms | 1.07% | 97.96% | 9.89 MHz |
-| 500 ms | 0.21% | 99.74% | 9.98 MHz |
+| 50 ms | 43.22% | 42.24% | 5.68 MHz |
+| 100 ms | 21.61% | 63.64% | 7.84 MHz |
+| 500 ms | 4.32% | 91.06% | 9.57 MHz |
 
-The 60% saturation threshold was **not reached up to 100 vehicles** for any
-upload interval. The higher-overhead sensitivity case (64-byte payload,
-exponent 3.5, 100 vehicles) reached 9.21% at 50 ms and likewise did not reach
-the threshold. These are findings for this specified scenario and simplified
-channel model, not proof that saturation cannot occur in a deployed system.
+The 60% saturation threshold was **not reached within 100 vehicles** (tested range),
+but linear extrapolation (R^2 > 0.9999) puts it at ~139 vehicles (32 B, 50 ms) and
+~115 vehicles for the higher-overhead sensitivity case (64 B, exponent 3.5, 52.44%
+at 100 vehicles, 50 ms). These are findings for this simplified channel model.
 
 1. **Done:** build and validate the SUMO mobility scenario.
 2. **Done:** implement and test the specified link budget, Shannon capacity,

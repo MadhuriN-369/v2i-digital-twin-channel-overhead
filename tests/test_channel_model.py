@@ -54,7 +54,8 @@ class ChannelModelTests(unittest.TestCase):
         self.assertAlmostEqual(capacity_bps, 10e6, delta=1e-6)
 
     def test_packet_airtime_uses_payload_bits_over_shannon_rate(self):
-        self.assertAlmostEqual(packet_airtime_s(32, 8e6), 32e-6)
+        # (32 + 28 MAC header) * 8 / 8 Mbps + 196 us overhead = 256 us
+        self.assertAlmostEqual(packet_airtime_s(32, 8e6), 256e-6)
 
     def test_rejects_path_loss_exponent_outside_assignment_range(self):
         with self.assertRaises(ValueError):

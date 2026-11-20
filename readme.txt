@@ -35,7 +35,10 @@ Default results:
 - Madhuri_241CS236.zip (one directory above the project)
 
 The baseline uses a 32-byte telemetry payload, a 3.25 path-loss exponent, and
-five repeatable random-phase runs per scenario. The 60 percent utilisation
-threshold is not reached through 100 vehicles in the tested scenarios.
+five repeatable random-phase runs per scenario. Airtime includes 802.11p frame overhead (28-byte MAC header plus 196 us of
+preamble, DIFS and average backoff). Utilisation reaches 43.2 percent at 100
+vehicles with 50 ms updates. The 60 percent threshold is not reached within 100
+vehicles, but extrapolation puts it at about 139 vehicles (32 B) and about 115
+vehicles (64 B, exponent 3.5).
 The report identifies the analytical model assumptions and is a draft for
 mentor review; it is not a claim of mentor approval.
